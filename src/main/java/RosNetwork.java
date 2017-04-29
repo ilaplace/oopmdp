@@ -37,8 +37,8 @@ public class RosNetwork {
 
             @Override
             public State unpackStateFromMsg(JsonNode jsonNode, String s){
-                    MessageUnpacker<StringState> unpacker = new MessageUnpacker<StringState>(StringState.class);
-                    StringState data = unpacker.unpackRosMessage(jsonNode);
+                    MessageUnpacker<Agent> unpacker = new MessageUnpacker<Agent>(Agent.class);
+                    Agent data = unpacker.unpackRosMessage(jsonNode);
 //                    System.out.print(data.dofs[2]+"\n\n");
                     return unpacker.unpackRosMessage(jsonNode);
             }
@@ -48,37 +48,6 @@ public class RosNetwork {
         Policy randPolicy = new RandomPolicy(domain);
         PolicyUtils.rollout(randPolicy, env, 100);
 
-    }
-    public static class StringState implements State{
-
-        public Float [] dofs;
-
-
-
-        public StringState() {
-        }
-
-        public StringState(Float data1[]) {
-            this.dofs = data1;
-
-        }
-
-        @Override
-        public List<Object> variableKeys() {
-            return Arrays.<Object>asList("data");
-        }
-
-        @Override
-        public Object get(Object variableKey) {
-            return dofs;
-        }
-
-        @Override
-        public State copy() {
-            return new StringState(dofs);
-        }
-
-       //TODO toString fonk ekle
     }
 
     public static void main(String[] args) {
