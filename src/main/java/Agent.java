@@ -79,6 +79,7 @@ public class Agent implements ObjectInstance, MutableState{
         Object obj = 2.00002;
         Float as = new Float(obj.toString());
         System.out.print(as);
+        Agent ag = new Agent();
 
 
     }
