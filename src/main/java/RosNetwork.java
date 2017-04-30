@@ -30,16 +30,18 @@ public class RosNetwork {
         String stateTopic = "/burlap_state";
         String stateMessage = "std_msgs/String";
         String actionTopic = "/burlap_action";
+        String state = "tut/dof";
 
-        RosEnvironment env = new RosEnvironment(domain,uri, stateTopic,
-                "tut/dof") {
+        RosEnvironment env = new RosEnvironment(domain,uri, stateTopic, state) {
 
 
             @Override
             public State unpackStateFromMsg(JsonNode jsonNode, String s){
                     MessageUnpacker<Agent> unpacker = new MessageUnpacker<Agent>(Agent.class);
                     Agent data = unpacker.unpackRosMessage(jsonNode);
-//                    System.out.print(data.dofs[2]+"\n\n");
+                    if (data.p_values.length != 0)
+                        System.out.print(data.p_values[1]+"\n\n");
+
                     return unpacker.unpackRosMessage(jsonNode);
             }
         };
@@ -49,6 +51,7 @@ public class RosNetwork {
         PolicyUtils.rollout(randPolicy, env, 100);
 
     }
+
 
     public static void main(String[] args) {
         RosNetwork ros = new RosNetwork();

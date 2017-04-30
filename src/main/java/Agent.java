@@ -15,16 +15,16 @@ public class Agent implements ObjectInstance, MutableState{
     private static List<String> keys = Arrays.asList(Domain.variables);
     public String name = "agent";
 
-    public double[] p_values = new double[Domain.DOF];
+    public float[] p_values = new float[Domain.DOF];
 
     public Agent() {
     }
 
-    public Agent(double[] values) {
+    public Agent(float[] values) {
         this.p_values = values;
     }
 
-    public Agent(double[] values, String name) {
+    public Agent(float[] values, String name) {
             this.p_values = values;
              this.name = name;
  }
@@ -33,7 +33,7 @@ public class Agent implements ObjectInstance, MutableState{
     public MutableState set(Object variableKey, Object value) {
         for (int i = 0; i <this.p_values.length ; i++) {
             if (variableKey.toString().equals(Domain.variables[i]))
-                this.p_values[i] = new Double(value.toString());
+                this.p_values[i] = new Float(value.toString());
         }
         return this;
     }
