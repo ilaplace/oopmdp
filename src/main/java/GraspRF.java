@@ -17,7 +17,7 @@ public class GraspRF implements RewardFunction {
     //TODO Not implemented
     public double collisionReward = -100.0;
 
-    public double defaultReward = -1.0;
+    public double defaultReward = 0.0;
 
     protected PropositionalFunction graspSucces;
 

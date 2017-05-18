@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class Domain implements DomainGenerator {
 
-    public static final Integer DOF = 15;
+    public static final Integer DOF = 4;
     public static final String HAND_CLASS = "hand";
     public static final String GRASPABLE_OBJECT_CLASS = "grasp_object";
     public static final String QUALITY = "quality";
@@ -95,7 +95,7 @@ public class Domain implements DomainGenerator {
     public static class RobotParams{
 
         protected double p_minim = 0.;
-        protected double p_max = 2*Math.PI;
+        protected double p_max = 4.;
         //TODO Check margins for robot
 
         public double getP_minim() {
@@ -150,18 +150,13 @@ public class Domain implements DomainGenerator {
         }
 
         @Override
-        public boolean isTrue(OOState ooState, String... strings) {
-
-            //TODO Check quality
-            return false;
+        public boolean isTrue(OOState ooState, String... params) {
+            Agent agent =(Agent) ooState.object(params[1]);
+            float s = agent.quality[0];
+            return s != -1;
         }
-    }
-
-    public static void main(String[] args) {
-        Domain dm = new Domain();
-        Agent ag = new Agent();
-        ag.variableKeys();
-        System.out.print("sad");
 
     }
+
+
 }
