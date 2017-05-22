@@ -17,6 +17,11 @@ public class GraspTF implements TerminalFunction {
 
     @Override
     public boolean isTerminal(burlap.mdp.core.state.State state) {
-        return this.graspSucces.someGroundingIsTrue((OOState)state);
+
+        if(Domain.quality[1] !=0){
+            System.out.println("Terminal State");
+            return true;
+        }
+        else return false;
     }
 }

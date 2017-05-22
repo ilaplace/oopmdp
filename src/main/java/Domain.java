@@ -1,3 +1,4 @@
+import burlap.behavior.functionapproximation.dense.ConcatenatedObjectFeatures;
 import burlap.mdp.auxiliary.DomainGenerator;
 import burlap.mdp.core.TerminalFunction;
 import burlap.mdp.core.action.UniversalActionType;
@@ -7,6 +8,7 @@ import burlap.mdp.core.oo.state.ObjectInstance;
 import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
 
+import javax.sql.rowset.serial.SerialStruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,7 +27,8 @@ public class Domain implements DomainGenerator {
     public static String[] actionPlus = new String[DOF];
     public static String[] variables = new String[DOF];
 
-
+    public static float[] p_values = new float[Domain.DOF];
+    public static float[] quality = new float[2];
     //Object
     public static String VAR_OBJECT_POSE_X;
     public static String VAR_OBJECT_POSE_Y;
@@ -71,10 +74,6 @@ public class Domain implements DomainGenerator {
         thrustValues = new ArrayList<Double>();
     }
 
-    public void addThrustActionWithThrust(double t){
-        //TODO Hack is this
-        this.thrustValues.add(t);
-    }
 
     public TerminalFunction getTf(){
         return tf;
@@ -126,7 +125,6 @@ public class Domain implements DomainGenerator {
             domain.addActionTypes(new UniversalActionType(actionMin[i]));
             domain.addActionTypes(new UniversalActionType(actionPlus[i]));
         }
-
         OOSADomain.Helper.addPfsToDomain(domain, this.generatePfs());
 
         RewardFunction rf = this.rf;
@@ -146,14 +144,17 @@ public class Domain implements DomainGenerator {
     public class GraspedPF extends PropositionalFunction{
 
         public GraspedPF(String name) {
-            super(name, new String[]{CLASS_AGENT, GRASPABLE_OBJECT_CLASS});
+            super(name, new String[]{CLASS_AGENT});
         }
 
         @Override
         public boolean isTrue(OOState ooState, String... params) {
-            Agent agent =(Agent) ooState.object(params[1]);
-            float s = agent.quality[0];
-            return s != -1;
+            Agent agent =(Agent) ooState.object(params[0]);
+            float s = agent.quality[1];
+            if(s != 0)
+                return true;
+            else
+                return false;
         }
 
     }

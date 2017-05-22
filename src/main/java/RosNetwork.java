@@ -10,6 +10,7 @@ import burlap.behavior.singleagent.Episode;
 import burlap.behavior.singleagent.learning.tdmethods.vfa.GradientDescentSarsaLam;
 import burlap.mdp.core.state.*;
 import burlap.mdp.core.state.State;
+import burlap.mdp.singleagent.model.RewardFunction;
 import burlap.mdp.singleagent.oo.OOSADomain;
 import burlap.ros.RosEnvironment;
 import burlap.ros.actionpub.ActionStringPublisher;
@@ -32,21 +33,15 @@ public class RosNetwork {
 
     public RosNetwork() {
 
-        Domain domain_ = new Domain();
+        final Domain domain_ = new Domain();
         OOSADomain domain =  domain_.generateDomain();
-
-        float[] ilis = new float[]{1.0f,2.0f};
-        float[] ilid = new float[]{1.0f,2.0f};
-        RState s = new RState(new Agent(ilis, ilid));
 
         String uri = "ws://localhost:9090";
         String stateTopic = "/burlap_state";
-        String stateMessage = "std_msgs/String";
         String actionTopic = "/burlap_action";
         String state = "tut/dof";
 
         RosEnvironment env = new RosEnvironment(domain,uri, stateTopic, state) {
-
             @Override
             public State unpackStateFromMsg(JsonNode jsonNode, String s){
                     MessageUnpacker<Agent> unpacker = new MessageUnpacker<Agent>(Agent.class);
@@ -54,17 +49,18 @@ public class RosNetwork {
                     if (data.p_values.length != 0)
                         System.out.print("DOF values: " + Arrays.toString(data.p_values) +"\n"
                             + "Quality: " + Arrays.toString(data.quality) + "\n\n");
+                    Domain.quality = data.quality;
+                float[] changeInDof = {0.0f,0.0f,0.0f,0.0f};
 
-                    return unpacker.unpackRosMessage(jsonNode);
-            }
-            public void subscribe(String topic, String type, RosListenDelegate delegate) {
-                rosBridge.subscribe(topic, type, delegate);
-            }
-        };
+                for (int i = 0; i < Domain.p_values.length; i++) {
+                    changeInDof[i] = data.p_values[i] - Domain.p_values[i];
+                }
+                System.out.println(Arrays.toString(changeInDof));
+                    Domain.p_values = data.p_values;
+                    return unpacker.unpackRosMessage(jsonNode);}};
 
         env.setActionPublisherForMultipleActions(domain.getActionTypes(),
-                new ActionStringPublisher(actionTopic,env.getRosBridge(),50));
-
+                new ActionStringPublisher(actionTopic,env.getRosBridge(),5));
 
         ConcatenatedObjectFeatures inputFeatures = new ConcatenatedObjectFeatures()
                 .addObjectVectorizion(Domain.CLASS_AGENT, new NumericVariableFeatures());
@@ -73,9 +69,7 @@ public class RosNetwork {
         double resolution = 1;
 
         Domain.RobotParams prm = new Domain.RobotParams();
-
         double[] widths =  new double[Domain.DOF];
-
         for (int i = 0; i < Domain.DOF; i++) {
             widths[i] = (prm.getP_max() - prm.getP_minim())/resolution;
         }
@@ -90,21 +84,24 @@ public class RosNetwork {
 
         GradientDescentSarsaLam agent =
                 new GradientDescentSarsaLam(domain,0.99, vfa,
-                        0.02,0.5);
+                        0.01,0.5);
+
+        env.setRewardFunction(new GraspRF(domain));
+        env.setTerminalFunction(new GraspTF(domain));
 
         List episodes = new ArrayList();
 
-        Agent ss = (Agent) env.currentObservation();
-
-        System.out.println(Arrays.toString(ss.p_values));
-
-
-
         for (int i = 0; i < 100; i++) {
-            Episode ea = agent.runLearningEpisode(env);
-            episodes.add(ea);
-            System.out.println(i + ea.maxTimeStep());
-            env.resetEnvironment();
+            try {
+                Episode ea = agent.runLearningEpisode(env);
+                episodes.add(ea);
+                System.out.println(i + ea.maxTimeStep());
+                env.resetEnvironment();
+            }
+            catch (NullPointerException e ) {
+               // e.printStackTrace();
+                System.out.println("Did you quit?");
+            }
         }
     }
     public static void main(String[] args) {
